@@ -340,4 +340,70 @@ add_action('acf/init', function () {
     ]);
 });
 
+// Auto-setup on theme activation: create Home page, set as front page, create menus
+add_action('after_switch_theme', function () {
+    // Create "Главная" page if not exists
+    $home_page = get_page_by_path('glavnaya');
+    if (!$home_page) {
+        $home_page_id = wp_insert_post([
+            'post_title'   => 'Главная',
+            'post_name'    => 'glavnaya',
+            'post_status'  => 'publish',
+            'post_type'    => 'page',
+            'post_content' => '',
+        ]);
+        $home_page = get_post($home_page_id);
+    }
+
+    if ($home_page) {
+        // Set static front page
+        update_option('show_on_front', 'page');
+        update_option('page_on_front', $home_page->ID);
+    }
+
+    // Ensure menus exist and assign to locations
+    $locations = get_theme_mod('nav_menu_locations');
+    if (!is_array($locations)) {
+        $locations = [];
+    }
+
+    // Primary menu
+    $primary_menu = wp_get_nav_menu_object('Primary');
+    if (!$primary_menu) {
+        $primary_menu_id = wp_create_nav_menu('Primary');
+        // Add Home link
+        if (!is_wp_error($primary_menu_id)) {
+            wp_update_nav_menu_item($primary_menu_id, 0, [
+                'menu-item-title'  => __('Home', 'git-exercise'),
+                'menu-item-url'    => home_url('/'),
+                'menu-item-status' => 'publish',
+            ]);
+        }
+        $primary_menu = wp_get_nav_menu_object($primary_menu_id);
+    }
+
+    // Footer menu
+    $footer_menu = wp_get_nav_menu_object('Footer');
+    if (!$footer_menu) {
+        $footer_menu_id = wp_create_nav_menu('Footer');
+        if (!is_wp_error($footer_menu_id)) {
+            wp_update_nav_menu_item($footer_menu_id, 0, [
+                'menu-item-title'  => __('Contact', 'git-exercise'),
+                'menu-item-url'    => '#contact',
+                'menu-item-status' => 'publish',
+            ]);
+        }
+        $footer_menu = wp_get_nav_menu_object($footer_menu_id);
+    }
+
+    // Assign
+    if ($primary_menu && isset($primary_menu->term_id)) {
+        $locations['primary'] = (int) $primary_menu->term_id;
+    }
+    if ($footer_menu && isset($footer_menu->term_id)) {
+        $locations['footer'] = (int) $footer_menu->term_id;
+    }
+    set_theme_mod('nav_menu_locations', $locations);
+});
+
 
