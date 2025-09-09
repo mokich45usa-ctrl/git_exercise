@@ -1,0 +1,29 @@
+# зависимости
+node_modules/
+
+# сборка/вывод
+dist/
+build/
+
+# логи
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# среды
+.env
+.env.*
+!.env.example
+
+# инструменты/кэш
+.vite/
+.cache/
+.temp/
+.tmp/
+.eslintcache
+.turbo/
+
+# ОС
+.DS_Store
+Thumbs.db
