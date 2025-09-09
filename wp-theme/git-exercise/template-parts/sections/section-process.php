@@ -3,8 +3,9 @@
   <div class="container">
     <h2><?php echo esc_html(gx_get_field('process_title', __('Process', 'git-exercise'))); ?></h2>
     <ol>
-      <?php if (function_exists('have_rows') && have_rows('process_steps', 'option')): ?>
-        <?php while (have_rows('process_steps', 'option')): the_row(); ?>
+      <?php $target = function_exists('get_field') ? gx_acf_target() : null; ?>
+      <?php if (function_exists('have_rows') && have_rows('process_steps', $target)): ?>
+        <?php while (have_rows('process_steps', $target)): the_row(); ?>
           <li>
             <strong><?php echo esc_html(get_sub_field('title')); ?></strong>
             <div class="muted"><?php echo esc_html(get_sub_field('description')); ?></div>

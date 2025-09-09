@@ -44,28 +44,23 @@ add_action('wp_enqueue_scripts', function () {
     // wp_enqueue_script('git-exercise-app', get_template_directory_uri() . '/build/app.js', [], $theme_version, true);
 });
 
+// Determine where to read ACF fields from (front page ID)
+function gx_acf_target() {
+    $front_id = (int) get_option('page_on_front');
+    return $front_id > 0 ? $front_id : get_queried_object_id();
+}
+
 // Helper: get field safely (works even if ACF not installed)
 function gx_get_field($key, $default = '') {
     if (function_exists('get_field')) {
-        $value = get_field($key, 'option');
+        $target = gx_acf_target();
+        $value = get_field($key, $target);
         return $value !== null && $value !== false && $value !== '' ? $value : $default;
     }
     return $default;
 }
 
-// Register ACF Options page if ACF exists
-add_action('init', function () {
-    if (function_exists('acf_add_options_page')) {
-        acf_add_options_page([
-            'page_title' => __('Site Settings', 'git-exercise'),
-            'menu_title' => __('Site Settings', 'git-exercise'),
-            'menu_slug'  => 'gx-site-settings',
-            'capability' => 'manage_options',
-            'redirect'   => false,
-            'position'   => 61,
-        ]);
-    }
-});
+// (No Options Page) — use Front Page to store ACF fields
 
 // Define ACF fields programmatically (loaded when ACF is active)
 add_action('acf/init', function () {
@@ -338,9 +333,9 @@ add_action('acf/init', function () {
         'location' => [
             [
                 [
-                    'param' => 'options_page',
+                    'param' => 'page_type',
                     'operator' => '==',
-                    'value' => 'gx-site-settings',
+                    'value' => 'front_page',
                 ],
             ],
         ],
